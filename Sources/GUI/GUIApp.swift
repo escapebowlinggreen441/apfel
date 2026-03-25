@@ -7,6 +7,7 @@ import AppKit
 import SwiftUI
 
 /// Start the GUI: launch server in background, open SwiftUI chat window.
+@MainActor
 func startGUI() {
     // Pick a port for the background server
     let port = 11434
@@ -85,10 +86,12 @@ private func waitForServer(client: APIClient, timeout: Double) -> Bool {
 
 // MARK: - App Delegate
 
+@MainActor
 class GUIAppDelegate: NSObject, NSApplicationDelegate {
     let serverProcess: Process
     let apiClient: APIClient
     var window: NSWindow?
+    var viewModel: ChatViewModel?
 
     init(serverProcess: Process, apiClient: APIClient) {
         self.serverProcess = serverProcess
@@ -97,7 +100,9 @@ class GUIAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let viewModel = ChatViewModel(apiClient: apiClient)
+        self.viewModel = viewModel
         let contentView = MainWindow(viewModel: viewModel, apiClient: apiClient)
+        NSApp.mainMenu = buildMainMenu()
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1100, height: 750),
@@ -124,5 +129,40 @@ class GUIAppDelegate: NSObject, NSApplicationDelegate {
             serverProcess.terminate()
             printStderr("GUI: server process terminated")
         }
+    }
+
+    private func buildMainMenu() -> NSMenu {
+        let mainMenu = NSMenu()
+
+        let appMenuItem = NSMenuItem()
+        mainMenu.addItem(appMenuItem)
+        let appMenu = NSMenu()
+        appMenuItem.submenu = appMenu
+        appMenu.addItem(withTitle: "Quit apfel", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+
+        let actionsMenuItem = NSMenuItem()
+        mainMenu.addItem(actionsMenuItem)
+        let actionsMenu = NSMenu(title: "Actions")
+        actionsMenuItem.submenu = actionsMenu
+
+        let selfDiscussItem = NSMenuItem(title: "Self-Discuss…", action: #selector(openSelfDiscussion), keyEquivalent: "j")
+        selfDiscussItem.target = self
+        actionsMenu.addItem(selfDiscussItem)
+
+        let clearItem = NSMenuItem(title: "Clear Chat", action: #selector(clearChat), keyEquivalent: "k")
+        clearItem.target = self
+        actionsMenu.addItem(clearItem)
+
+        return mainMenu
+    }
+
+    @objc
+    private func openSelfDiscussion() {
+        viewModel?.showSelfDiscussion = true
+    }
+
+    @objc
+    private func clearChat() {
+        viewModel?.clear()
     }
 }

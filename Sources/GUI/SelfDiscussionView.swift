@@ -12,6 +12,8 @@ struct SelfDiscussionView: View {
     @State private var turns = 3
     @State private var perspectiveA = "Argue strongly IN FAVOR of this topic. Be persuasive and specific."
     @State private var perspectiveB = "Argue strongly AGAINST this topic. Counter the previous arguments."
+    @State private var languageA = "en-GB"
+    @State private var languageB = "en-GB"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -56,6 +58,12 @@ struct SelfDiscussionView: View {
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(.blue)
+                Picker("Language", selection: $languageA) {
+                    ForEach(TTSManager.preferredVoices) { voice in
+                        Text(voice.label).tag(voice.languageCode)
+                    }
+                }
+                .pickerStyle(.menu)
                 TextField("System prompt for side A", text: $perspectiveA)
                     .textFieldStyle(.roundedBorder)
                     .font(.caption)
@@ -66,6 +74,12 @@ struct SelfDiscussionView: View {
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(.orange)
+                Picker("Language", selection: $languageB) {
+                    ForEach(TTSManager.preferredVoices) { voice in
+                        Text(voice.label).tag(voice.languageCode)
+                    }
+                }
+                .pickerStyle(.menu)
                 TextField("System prompt for side B", text: $perspectiveB)
                     .textFieldStyle(.roundedBorder)
                     .font(.caption)
@@ -84,7 +98,9 @@ struct SelfDiscussionView: View {
                             topic: topic,
                             turns: turns,
                             systemA: perspectiveA,
-                            systemB: perspectiveB
+                            systemB: perspectiveB,
+                            languageCodeA: languageA,
+                            languageCodeB: languageB
                         )
                     }
                 }

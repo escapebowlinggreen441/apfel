@@ -220,7 +220,14 @@ class ChatViewModel {
     // MARK: - Self-Discussion
 
     /// AI debates itself for N turns on a topic, alternating between two system prompts.
-    func startSelfDiscussion(topic: String, turns: Int, systemA: String, systemB: String) async {
+    func startSelfDiscussion(
+        topic: String,
+        turns: Int,
+        systemA: String,
+        systemB: String,
+        languageCodeA: String,
+        languageCodeB: String
+    ) async {
         guard !isSelfDiscussing else { return }
         isSelfDiscussing = true
         isStreaming = true
@@ -238,8 +245,11 @@ class ChatViewModel {
 
         for turn in 1...turns {
             let isA = turn % 2 == 1
-            let systemPromptForTurn = isA ? systemA : systemB
-            let label = isA ? "Perspective A" : "Perspective B"
+            let systemPromptForTurn = localizedSystemPrompt(
+                base: isA ? systemA : systemB,
+                languageCode: isA ? languageCodeA : languageCodeB
+            )
+            let speechLanguage = isA ? languageCodeA : languageCodeB
 
             // Create assistant placeholder
             let msgId = UUID().uuidString
@@ -286,7 +296,7 @@ class ChatViewModel {
 
                 // Speak if enabled
                 if speakEnabled, !previousResponse.isEmpty {
-                    tts.speak(previousResponse)
+                    tts.speak(previousResponse, languageCode: speechLanguage, voiceVariant: isA ? 0 : 1)
                     // Wait for speech to finish before next turn
                     while tts.isSpeaking {
                         try? await Task.sleep(for: .milliseconds(200))
@@ -304,5 +314,10 @@ class ChatViewModel {
 
         isSelfDiscussing = false
         isStreaming = false
+    }
+
+    private func localizedSystemPrompt(base: String, languageCode: String) -> String {
+        let languageLabel = TTSManager.preferredVoices.first(where: { $0.languageCode == languageCode })?.label ?? languageCode
+        return "\(base)\n\nRespond only in \(languageLabel)."
     }
 }

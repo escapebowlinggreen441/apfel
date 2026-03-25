@@ -5,376 +5,420 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![FoundationModels](https://img.shields.io/badge/Apple-FoundationModels-8E8E93?logo=apple&logoColor=white)](https://developer.apple.com/documentation/foundationmodels)
 
-> *German for "apple."*
+> German for "apple."
 
-**Apple Intelligence from the command line.**
+`apfel` is a Swift wrapper around Apple's built-in FoundationModels language model.
 
-A Swift CLI + OpenAI-compatible API server for Apple's [FoundationModels](https://developer.apple.com/documentation/foundationmodels) framework. No API keys. No cost. Runs on your Mac's Neural Engine. Works with any OpenAI client.
+It gives you three interfaces to the same model:
 
-```
-$ apfel "What is the capital of Austria?"
-The capital of Austria is Vienna.
-```
+- a Unix-style CLI
+- a local OpenAI-compatible HTTP server
+- a native macOS debugging interface for inspecting prompts, raw responses, logs, and stream events
 
----
+No API keys. No paid API. No model downloads. No cloud account.
+
+## What This Project Actually Is
+
+`apfel` is not trying to be a generic chat app.
+
+The core idea is:
+
+- expose Apple's model on the command line
+- make it usable from tools that expect the OpenAI Chat Completions API
+- make debugging transparent through a native GUI that shows what was sent, what came back, and how the request evolved
+
+The GUI exists primarily as an inspector:
+
+- request/response viewer
+- raw SSE stream inspection
+- live request log viewer
+- error and refusal debugging
+- voice input / output testing
+- self-discussion / prompt comparison
+
+If you want the shortest summary: `apfel` is a local developer-facing shell and debug harness for Apple Intelligence.
 
 ## Why
 
-macOS 26 ships with a built-in language model — the same one behind Writing Tools, Mail summaries, and Siri. Apple exposed it through the `FoundationModels` framework, but only for Swift apps with Xcode.
+macOS 26 ships with Apple's built-in language model through `FoundationModels`.
+Apple gave Swift apps an API, but not a good CLI, not an OpenAI-compatible local server, and not a transparent debugger.
 
-`apfel` puts that model on your command line — and serves it as an OpenAI-compatible API. CLI + server in one binary.
+`apfel` fills that gap.
 
-Most queries run on your Mac's Neural Engine with zero network traffic. For complex tasks, Apple's framework may route requests to [Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/) — Apple's end-to-end encrypted server infrastructure where data is never stored, never logged, and never accessible to Apple. Either way: no API keys, no accounts, no cost.
+## Features
+
+- Single binary: CLI, GUI, and server
+- OpenAI-compatible `POST /v1/chat/completions`
+- Streaming SSE support
+- Native macOS debug inspector for raw request/response payloads
+- Live log viewer with expandable request body, response body, and event trace
+- Voice input with explicit macOS permission handling
+- Text-to-speech playback with curated default voices
+- Self-discussion mode for A-vs-B prompt comparison
+- Safety/refusal-aware history pruning in the GUI
+
+## Requirements
+
+- macOS 26 (Tahoe) or later
+- Apple Silicon Mac
+- Swift 6.2 command line tools
+- Apple Intelligence enabled in System Settings
+
+For voice input:
+
+- Microphone permission
+- Speech Recognition permission
+- sometimes Dictation / Siri enabled, depending on macOS state
 
 ## Install
 
 ```bash
 git clone https://github.com/Arthur-Ficial/apfel.git
 cd apfel
-make install    # builds release binary → /usr/local/bin/apfel
+make install
 ```
 
-<details>
-<summary>Manual install / uninstall</summary>
+`make install`:
+
+- kills a running `apfel --serve` or `apfel --gui`
+- rebuilds release mode
+- reinstalls to `/usr/local/bin/apfel`
+- prompts for `sudo` only if needed
+
+Uninstall:
 
 ```bash
-# Build and copy manually
-swift build -c release
-sudo cp .build/release/apfel /usr/local/bin/
-
-# Uninstall
 make uninstall
-# or: sudo rm /usr/local/bin/apfel
 ```
 
-</details>
+## Quick Start
 
-### Requirements
-
-- **macOS 26** (Tahoe) or later
-- **Swift 6.2+** command line tools (ships with Xcode 26)
-- **Apple Intelligence** enabled in System Settings → Apple Intelligence & Siri
-
-## Usage
-
-### Ask a question
+### CLI
 
 ```bash
-$ apfel "Translate to German: hello world"
-Hallo Welt.
+apfel "What is the capital of Austria?"
 ```
 
-### Stream the response
+```bash
+apfel --stream "Write a haiku about shell scripts"
+```
 
 ```bash
-$ apfel --stream "Write a haiku about the terminal"
-Lines of code flow,
-Silent terminal whispers low—
-Stars in digital night.
+apfel --chat
+```
+
+```bash
+echo "Summarize this text" | apfel
+```
+
+### GUI Debugger
+
+```bash
+apfel --gui
+```
+
+### Local OpenAI-Compatible Server
+
+```bash
+apfel --serve
+```
+
+Then point any OpenAI client at:
+
+```text
+http://127.0.0.1:11434/v1
+```
+
+## CLI Usage
+
+### Single prompt
+
+```bash
+apfel "Translate to German: hello world"
+```
+
+### Streaming output
+
+```bash
+apfel --stream "List 5 file naming conventions"
 ```
 
 ### Interactive chat
 
 ```bash
-$ apfel --chat
-Apple Intelligence · on-device LLM · apfel v0.1.0
-────────────────────────────────────────────────────────
-Type 'quit' to exit.
-
-you› What's the meaning of life?
- ai› That's a profound question...
-
-you› quit
-Goodbye.
+apfel --chat
 ```
 
-### System prompts
+### System prompt
 
 ```bash
-$ apfel -s "Reply in exactly 5 words" "What is machine learning?"
-Computers learning from data patterns.
-```
-
-### Code generation
-
-```bash
-$ apfel "Write a bubble sort in Python with type hints"
-def bubble_sort(arr: list[int]) -> list[int]:
-    n = len(arr)
-    for i in range(n):
-        swapped = False
-        for j in range(0, n - i - 1):
-            if arr[j] > arr[j + 1]:
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                swapped = True
-        if not swapped:
-            break
-    return arr
-```
-
-### Text transformation
-
-```bash
-$ apfel -s "Respond with only the converted text" "Convert to uppercase: hello world"
-HELLO WORLD
-```
-
-### Developer jokes
-
-```bash
-$ apfel -s "One sentence only" "Tell a developer joke"
-Why don't programmers trust atoms? Because they make up everything!
-```
-
-### Pipe from stdin
-
-```bash
-$ echo "Explain quantum computing to a 5 year old" | apfel
-Quantum computing is like having a super smart calculator that can
-do lots of math really fast by using special tricks with tiny
-particles instead of regular ones.
-
-$ cat essay.txt | apfel -s "Summarize in 3 bullet points"
+apfel -s "Reply in exactly five words" "What is machine learning?"
 ```
 
 ### JSON output
 
 ```bash
-$ apfel -o json "Translate to German: hello world"
-{
-  "content" : "Hallo Welt.",
-  "metadata" : {
-    "on_device" : true,
-    "version" : "0.1.0"
-  },
-  "model" : "apple-foundationmodel"
-}
+apfel -o json "What is 2+2?"
 ```
 
-Pipe to `jq` for scripting:
+### Quiet scripting mode
 
 ```bash
-$ apfel -o json "What is 2+2?" | jq -r .content
-2 + 2 equals 4.
+capital=$(apfel -q "Capital of France? One word only.")
+echo "$capital"
 ```
 
-In chat mode, JSON output uses [JSONL](https://jsonlines.org) (one object per line):
+## Server Usage
+
+Start the server:
 
 ```bash
-$ apfel -o json --chat
-{"content":"What is 2+2?","role":"user"}
-{"content":"4.","model":"apple-foundationmodel","role":"assistant"}
+apfel --serve
 ```
 
-### 50 more examples
+Available endpoints:
 
-See **[EXAMPLES.md](EXAMPLES.md)** for 50 real prompts that challenge the model: philosophy, security, coding, logic puzzles, creative writing, translation, forced choices, and edge cases — with unedited outputs and commentary.
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/v1/chat/completions` | Chat completion, streaming and non-streaming |
+| `GET` | `/v1/models` | Static model list |
+| `GET` | `/v1/logs` | Structured request logs |
+| `GET` | `/v1/logs/stats` | Aggregate server stats |
+| `GET` | `/health` | Health check |
 
-## Server Mode (OpenAI-Compatible API)
+Server options:
 
-Start an OpenAI-compatible HTTP server with one command:
-
-```bash
-$ apfel --serve
-apfel server v0.2.0
-├ endpoint: http://127.0.0.1:11434
-├ model:    apple-foundationmodel
-├ cors:     disabled
-├ max concurrent: 5
-├ debug:    off
-└ ready
+```text
+--serve
+--port <number>
+--host <address>
+--cors
+--max-concurrent <n>
+--debug
 ```
 
-### Use with any OpenAI client
-
-**Python:**
+Example with Python:
 
 ```python
 from openai import OpenAI
 
-client = OpenAI(base_url="http://localhost:11434/v1", api_key="unused")
-r = client.chat.completions.create(
-    model="apple-foundationmodel",
-    messages=[{"role": "user", "content": "What is 2+2?"}]
+client = OpenAI(
+    base_url="http://127.0.0.1:11434/v1",
+    api_key="unused",
 )
-print(r.choices[0].message.content)  # "Four."
+
+resp = client.chat.completions.create(
+    model="apple-foundationmodel",
+    messages=[{"role": "user", "content": "What is 1+1?"}],
+)
+
+print(resp.choices[0].message.content)
 ```
 
-**curl:**
+Example with `curl`:
 
 ```bash
-curl -X POST http://localhost:11434/v1/chat/completions \
+curl -X POST http://127.0.0.1:11434/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"model":"apple","messages":[{"role":"user","content":"Hello"}]}'
+  -d '{
+    "model": "apple-foundationmodel",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
 ```
 
-**Streaming:**
+Streaming:
 
 ```bash
-curl -N http://localhost:11434/v1/chat/completions \
+curl -N http://127.0.0.1:11434/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"model":"apple","messages":[{"role":"user","content":"Hello"}],"stream":true}'
+  -d '{
+    "model": "apple-foundationmodel",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "stream": true
+  }'
 ```
 
-### Server endpoints
+## GUI Debugging Interface
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/v1/chat/completions` | Chat completion (streaming + non-streaming) |
-| GET | `/v1/models` | List available models |
-| GET | `/v1/logs` | Query request logs (filter by status, path, time) |
-| GET | `/v1/logs/stats` | Server stats (uptime, RPM, errors, active requests) |
-| GET | `/health` | Health check |
-
-### Server options
-
-```
---serve              Start the server (default: 127.0.0.1:11434)
---port <number>      Custom port [default: 11434]
---host 0.0.0.0       Bind to all interfaces (LAN access)
---cors               Enable CORS headers for browser clients
---max-concurrent <n> Max concurrent model requests [default: 5]
---debug              Verbose logging with full request/response bodies
-```
-
-### Monitoring
+Launch:
 
 ```bash
-# Request logs
-curl http://localhost:11434/v1/logs
-curl http://localhost:11434/v1/logs?status=500
-curl http://localhost:11434/v1/logs?errors=true&limit=10
-
-# Server stats
-curl http://localhost:11434/v1/logs/stats
+apfel --gui
 ```
 
-### Compose with other tools
+The GUI is intentionally built for transparency, not polish-first chat.
+
+It includes:
+
+- Chat transcript
+- Inline system prompt field
+- Debug Inspector panel
+- Live Logs panel
+- Voice input / output controls
+- Self-discussion prompt playground
+
+### Debug Inspector
+
+For the selected message, the inspector shows:
+
+- the exact JSON request body
+- the raw server response
+- the extracted visible assistant content
+- a copyable `curl` reproduction command
+
+This is the fastest way to answer:
+
+- what did we actually send?
+- what did the server actually return?
+- did the UI extract the right thing?
+
+### Logs Panel
+
+The logs panel polls `/v1/logs` and shows structured request history.
+
+Each row can expand to reveal:
+
+- request body
+- response body
+- stream transcript
+- error text
+- internal event list
+
+Streaming requests create a dedicated completion log entry so the final SSE transcript is preserved.
+
+### Menu and Shortcuts
+
+Toolbar:
+
+- `Clear`
+- `Self-Discuss`
+- `Debug`
+- `Logs`
+
+Menu:
+
+- `Actions > Self-Discuss…`
+- `Actions > Clear Chat`
+
+Keyboard shortcuts:
+
+- `Cmd+K` clear chat
+- `Cmd+D` toggle debug panel
+- `Cmd+L` toggle logs panel
+- `Cmd+J` open self-discussion
+
+## Voice Input and Output
+
+### Speech-to-text
+
+The GUI microphone button:
+
+- requests microphone permission
+- requests speech-recognition permission
+- opens the exact relevant System Settings pane when blocked
+- changes into a clear red `Stop` control while recording
+- submits the captured transcript immediately when recording stops
+
+### Text-to-speech
+
+Assistant playback uses curated, human-sounding defaults.
+
+Current default language is British English.
+
+The voice picker logic prefers:
+
+- Siri-style voices if exposed by `AVSpeechSynthesizer`
+- otherwise the best installed modern system voice
+- avoids novelty and Eloquence voices unless there is no better option
+
+## Self-Discussion
+
+Self-discussion is a built-in A-vs-B prompt test harness.
+
+Use it to compare:
+
+- two system prompts
+- two response styles
+- two speaking voices
+- two language settings
+
+By default:
+
+- both sides speak British English
+- side A and side B use different voice variants
+
+This makes it useful as a lightweight prompt lab, not just a gimmick.
+
+## Safety and History Handling
+
+The GUI intentionally excludes bad turns from future history when appropriate.
+
+That includes:
+
+- safety-blocked turns
+- plain-text refusal turns such as `I can't assist with that request`
+- empty assistant turns
+- failed assistant placeholder turns
+
+The point is to prevent one poisoned or blocked response from contaminating the next request.
+
+## Logging Philosophy
+
+This project is opinionated about debugging:
+
+- every request should be inspectable
+- every response should be reproducible
+- streaming should not be opaque
+- safety failures should not disappear into UI abstraction
+
+That is why the GUI exists.
+
+If you are trying to debug:
+
+- FoundationModels behavior
+- response extraction bugs
+- refusal handling
+- SSE handling
+- OpenAI-client compatibility
+
+the GUI is the primary tool.
+
+## Architecture
+
+High-level stack:
+
+```text
+CLI / GUI / OpenAI-compatible HTTP server
+        ↓
+FoundationModels.framework
+        ↓
+Apple Intelligence
+  - on-device model
+  - optional Private Cloud Compute routing
+```
+
+The routing between on-device execution and Private Cloud Compute is controlled by Apple's framework, not by `apfel`.
+
+## Limitations
+
+- macOS 26+ only
+- Apple Silicon only
+- one Apple model, not a model manager
+- model behavior is constrained by Apple's safety and product rules
+- not intended as a polished consumer chat client
+
+## Examples
+
+See [EXAMPLES.md](./EXAMPLES.md) for real prompts and outputs.
+
+## Build
 
 ```bash
-# Translate a file
-cat README.md | apfel -s "Translate to German" > README.de.md
-
-# Generate commit messages
-git diff --staged | apfel -s "Write a concise commit message for this diff"
-
-# Batch process
-cat questions.txt | while read -r q; do apfel -o json "$q"; done > answers.jsonl
-
-# Quick lookup in a script
-capital=$(apfel -q "Capital of France? One word only.")
-echo "The capital is $capital"
-```
-
-## Options
-
-```
-apfel [OPTIONS] <prompt>       Send a single prompt
-apfel --chat                   Interactive conversation
-apfel --stream <prompt>        Stream the response in real-time
-
-OPTIONS:
-  -s, --system <text>     Set a system prompt to guide the model
-  -o, --output <format>   Output format: plain, json [default: plain]
-  -q, --quiet             Suppress headers, prompts, and other chrome
-      --no-color           Disable ANSI color codes in output
-  -h, --help              Show help
-  -v, --version           Print version
-
-ENVIRONMENT:
-  NO_COLOR                Disable colored output (https://no-color.org)
-```
-
-## Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | Runtime error (model unavailable, inference failed) |
-| `2` | Usage error (invalid arguments, missing prompt) |
-| `130` | Interrupted (Ctrl+C) |
-
-## How It Works
-
-`apfel` calls Apple's [FoundationModels](https://developer.apple.com/documentation/foundationmodels) framework, introduced in macOS 26 ([WWDC 2025](https://developer.apple.com/videos/play/wwdc2025/286/)). The framework provides access to the language model that powers Apple Intelligence features like Writing Tools, Mail summaries, and Siri.
-
-### On-device vs. Private Cloud Compute
-
-Apple Intelligence uses a **hybrid architecture**:
-
-- **On-device model (~3B parameters):** Runs on the Mac's Neural Engine. Handles most common tasks. No network traffic. Fully offline-capable.
-- **Private Cloud Compute:** For complex tasks that exceed the on-device model's capacity, Apple's framework may route requests to [Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/) (PCC) servers. PCC uses custom Apple silicon with a hardened OS. Data is encrypted end-to-end, processed statelessly (immediately deleted), and is never accessible to Apple or stored in logs. The [full production code is published](https://security.apple.com/blog/private-cloud-compute/) for independent security audits.
-
-The routing is automatic and transparent — `apfel` (and you) don't control which path is taken. What's guaranteed: **no API keys, no accounts, no cost, and Apple's privacy guarantees either way.**
-
-### Architecture
-
-```
-┌──────────────────────────────────────────────────────┐
-│  apfel CLI (this project)                            │
-│  - Argument parsing, I/O, JSON formatting            │
-├──────────────────────────────────────────────────────┤
-│  FoundationModels.framework (Apple)                  │
-│  - LanguageModelSession API                          │
-│  - Streaming via AsyncSequence                       │
-│  - Automatic on-device / PCC routing                 │
-├──────────────────────────────────────────────────────┤
-│  Apple Intelligence                                  │
-│  - On-device: Neural Engine / GPU / CPU (~3B model)  │
-│  - Cloud: Private Cloud Compute (encrypted, no logs) │
-│  - Model bundled with macOS 26                       │
-└──────────────────────────────────────────────────────┘
-```
-
-### What `apfel` is — and isn't
-
-This is Apple's built-in model exposed as a Unix tool. It's fast, free, and private. It's useful for quick lookups, text transformation, code generation, translation, drafting, and scripting. It is not GPT-4 or Claude. Expect small-model behavior: good at following instructions, decent at common tasks, less good at complex multi-step reasoning or long-form generation. Think of it as `grep` for natural language — a Unix tool, not an oracle.
-
-## Design Decisions
-
-- **Zero dependencies.** No Swift ArgumentParser, no third-party packages. Just `FoundationModels` + `Foundation`. The binary is 149KB.
-- **Single file.** ~540 lines of documented Swift. Easy to read, easy to fork, easy to understand.
-- **Unix philosophy.** Text in, text out. Stdin works. Stdout is clean (errors go to stderr). JSON mode for machine consumption. Proper exit codes. `NO_COLOR` respected.
-- **No config files.** No `~/.apfelrc`, no environment variables to set (besides `NO_COLOR`). It just works.
-
-## FAQ
-
-**Q: Does this work on Intel Macs?**
-A: macOS 26 + Apple Intelligence requires Apple Silicon (M1 or later). Intel Macs don't have the Neural Engine.
-
-**Q: Does this require Xcode?**
-A: You need the Xcode 26 Command Line Tools (`xcode-select --install`). Full Xcode is not required.
-
-**Q: Is this really private? Does data leave my Mac?**
-A: Most requests run entirely on-device via the Neural Engine. For complex tasks, Apple's framework may route to [Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/) — encrypted, stateless servers where data is never stored or logged. Apple publishes the [full server code](https://security.apple.com/blog/private-cloud-compute/) for independent audit. You can't control the routing, but either path has strong privacy guarantees.
-
-**Q: Does this work offline?**
-A: Yes, for tasks handled by the on-device model (~3B parameters). Complex tasks that would normally route to Private Cloud Compute will fail without network connectivity.
-
-**Q: Can I use this in CI/CD?**
-A: Only on macOS 26 runners with Apple Intelligence enabled. The model needs the hardware (Apple Silicon + Neural Engine).
-
-**Q: How does this compare to `llm`, `ollama`, etc.?**
-A: Those tools run third-party models you choose and download. `apfel` runs Apple's built-in model — no downloads, no setup, no GPU memory management, no model selection. The tradeoff: you get Apple's model (and only Apple's model).
-
-**Q: Is the model any good?**
-A: It's a small on-device model. It's great for quick tasks: translation, summarization, Q&A, text rewriting. It's not great for complex multi-step reasoning. Try it and see.
-
-**Q: Why "apfel"?**
-A: It's German for "apple." The author is Austrian.
-
-## Building from Source
-
-```bash
-swift build            # debug build
-swift build -c release # optimized release build (~149KB)
-swift package clean    # clean build artifacts
+swift build
+swift build -c release
+swift package clean
 ```
 
 ## License
 
 [MIT](LICENSE)
-
----
-
-<sub>Built by [Arthur Ficial](https://github.com/Arthur-Ficial), an AI assistant created by [Franz Enzenhofer](https://www.fullstackoptimization.com). Yes, this CLI was built by an AI to talk to another AI. We live in interesting times.</sub>
