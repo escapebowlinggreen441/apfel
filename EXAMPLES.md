@@ -2,7 +2,7 @@
 
 Every response below is a **real, unedited output** from Apple's on-device model via `apfel`.
 Nothing was cherry-picked, cleaned up, or re-run.
-This file was **generated programmatically** from raw model outputs — [see the script](/tmp/generate-examples.py).
+This file was **generated programmatically** from raw model outputs.
 
 > Tested on macOS 26.3.1, MacBook Air M4, March 2026.
 
