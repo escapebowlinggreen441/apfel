@@ -1,6 +1,6 @@
 # Server Security
 
-apfel's HTTP server (`--serve`) runs on localhost by default and is designed for local development and on-device inference. This document explains the security settings, their reasoning, and how to configure them for your specific use case.
+apfel's HTTP server (`--serve`) runs on localhost by default and is designed for local development and on-device inference. This document explains the security settings and how to configure them for your specific use case.
 
 ## How it works
 
@@ -301,7 +301,7 @@ The `--token` flag overrides `APFEL_TOKEN`. The `--token-auto` flag overrides bo
 
 ### `--footgun` - Disable all protections
 
-The nuclear option. Combines `--no-origin-check` and `--cors` to disable all security. This is the pre-0.6.23 behavior.
+The nuclear option. Combines `--no-origin-check` and `--cors` to disable all security.
 
 ```bash
 apfel --serve --footgun
@@ -446,16 +446,6 @@ apfel --serve --cors --allowed-origins "http://localhost:3000" --token "$(openss
 ```
 
 This gives you: origin restricted to one specific app + token auth required + CORS for that app only.
-
-### I want the old behavior (before CSRF protection)
-
-```bash
-# Pre-0.6.23 default (accepted all origins, no CORS headers):
-apfel --serve --no-origin-check
-
-# Pre-0.6.23 with --cors (accepted all origins + CORS headers):
-apfel --serve --footgun
-```
 
 ### Quick demo / hackathon
 
