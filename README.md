@@ -32,9 +32,10 @@ Every Mac with Apple Silicon has a **built-in LLM** - Apple's on-device foundati
 
 ```bash
 brew tap Arthur-Ficial/tap
-brew install Arthur-Ficial/tap/apfel
-brew upgrade apfel                     # update to latest
+brew install apfel
 ```
+
+Update: `brew upgrade apfel`
 
 **Build from source:**
 
@@ -86,11 +87,15 @@ result=$(apfel -q "Capital of France? One word.")
 
 ### OpenAI-compatible server
 
-```bash
-# Start server
-apfel --serve
+Start the server:
 
-# In another terminal:
+```bash
+apfel --serve
+```
+
+Then in another terminal:
+
+```bash
 curl http://localhost:11434/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"apple-foundationmodel","messages":[{"role":"user","content":"Hello"}]}'
@@ -130,9 +135,10 @@ apfel --chat --context-output-reserve 256        # custom output token reserve
 ### Updating
 
 ```bash
-apfel --update                  # check for updates and upgrade via Homebrew (v0.7.7+)
-brew upgrade apfel              # or update directly via Homebrew
+apfel --update
 ```
+
+Or directly via Homebrew: `brew upgrade apfel`
 
 ### Benchmarking
 
