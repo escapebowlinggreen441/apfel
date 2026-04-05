@@ -54,9 +54,9 @@ HTTP Server (/v1/*) ───────┘   ContextManager → Transcript API
 
 ## Current Status
 
-- Version source of truth: `.version` (currently `0.7.8` in this workspace)
-- Tests: `118` unit + `97` integration
-- Latest GitHub issue before this local fix: `#34` (`Arrow key navigation in chat mode`)
+- Version source of truth: `.version` (currently `0.8.1`)
+- Tests: `122` unit + `120` integration (full suite ~45 seconds)
+- Issues `#34` (arrow keys) and `#35` (MCP auto-execute) fixed in v0.8.1
 - GitHub issue `#33` is closed; the landing page example lives in a separate repo
 
 ## Build & Test
