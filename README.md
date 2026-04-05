@@ -260,21 +260,20 @@ Also in `demo/`:
 
 ### Debug GUI
 
-**[apfel-gui](https://github.com/Arthur-Ficial/apfel-gui)** - native macOS SwiftUI app for chatting with Apple Intelligence and inspecting every request/response.
+**[apfel-gui](https://github.com/Arthur-Ficial/apfel-gui)** - native macOS SwiftUI debug app that talks to `apfel --serve` via HTTP. Shows everything: raw HTTP requests/responses, full MCP JSON-RPC protocol data, server event traces, token budgets, SSE streams.
 
 ![apfel GUI](screenshots/gui-chat.png)
 
 ```bash
-# Install (requires apfel):
-brew install Arthur-Ficial/tap/apfel    # if you don't have apfel yet
-git clone https://github.com/Arthur-Ficial/apfel-gui.git
-cd apfel-gui && make install
-
-# Run:
+brew install Arthur-Ficial/tap/apfel-gui   # installs apfel as a dependency
 apfel-gui
 ```
 
-Chat, debug inspector, request logs, context settings, speech-to-text, text-to-speech - all on-device. See the [apfel-gui repo](https://github.com/Arthur-Ficial/apfel-gui) for details.
+On launch it starts `apfel --serve` in the background with MCP tool servers, waits for the health check, and opens the debug window. Quitting the app stops the server.
+
+**Debug inspector timeline:** server launch command, HTTP request body, chronological server event trace (context build, MCP tool execution, finish reason), raw MCP JSON-RPC request/response, timing and token breakdown, copy-paste curl and CLI commands to reproduce.
+
+**Also:** chat with streaming, model settings (temperature, max tokens, seed, JSON mode), context strategy picker, live request log with stats, speech-to-text, text-to-speech, self-discussion mode - all on-device. See the [apfel-gui repo](https://github.com/Arthur-Ficial/apfel-gui) for details.
 
 ## OpenAI API Compatibility
 
@@ -568,7 +567,7 @@ Every `make build`/`make install` automatically:
 ## Related Projects
 
 - [apfel-clip](https://github.com/Arthur-Ficial/apfel-clip) - AI-powered clipboard actions from the menu bar (fix grammar, translate, explain code, and more)
-- [apfel-gui](https://github.com/Arthur-Ficial/apfel-gui) - Native macOS SwiftUI debug GUI for apfel (chat, request inspector, logs, TTS/STT)
+- [apfel-gui](https://github.com/Arthur-Ficial/apfel-gui) - Native macOS SwiftUI debug GUI for apfel (debug inspector, MCP protocol viewer, request logs, chat, TTS/STT)
 
 ## Examples
 
