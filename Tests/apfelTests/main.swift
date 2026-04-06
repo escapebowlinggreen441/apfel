@@ -79,6 +79,7 @@ suite("ChatRequestValidatorTests") { runChatRequestValidatorTests() }
 suite("OriginValidatorTests") { runOriginValidatorTests() }
 suite("MCPClientTests") { runMCPClientTests() }
 suite("AsyncHarnessTests") { runAsyncHarnessTests() }
+suite("RetryTests") { runRetryTests() }
 
 // MARK: - Summary
 

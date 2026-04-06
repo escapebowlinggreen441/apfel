@@ -17,10 +17,12 @@ struct SessionOptions: Sendable {
     let seed: UInt64?
     let permissive: Bool
     let contextConfig: ContextConfig
+    let retryEnabled: Bool
+    let retryCount: Int
 
     static let defaults = SessionOptions(
         temperature: nil, maxTokens: nil, seed: nil, permissive: false,
-        contextConfig: .defaults
+        contextConfig: .defaults, retryEnabled: false, retryCount: 3
     )
 }
 

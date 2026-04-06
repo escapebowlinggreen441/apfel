@@ -72,13 +72,15 @@ func handleChatCompletion(_ request: Request, context: some RequestContext) asyn
         outputReserve: chatRequest.x_context_output_reserve ?? 512
     )
 
-    // Build session options from request
+    // Build session options from request (retry config comes from server config)
     let sessionOpts = SessionOptions(
         temperature: chatRequest.temperature,
         maxTokens: chatRequest.max_tokens,
         seed: chatRequest.seed.map { UInt64($0) },
         permissive: false,
-        contextConfig: contextConfig
+        contextConfig: contextConfig,
+        retryEnabled: serverState.config.retryEnabled,
+        retryCount: serverState.config.retryCount
     )
 
     // Inject MCP tools if client didn't send any; track source for auto-execution
@@ -179,10 +181,13 @@ private func mcpAutoExecuteResponse(
     var events = events
 
     // Collect full model response (never stream intermediate tool-call output to client)
+    let srvRetryMax = sessionOptions.retryEnabled ? sessionOptions.retryCount : 0
     let rawContent: String
     do {
-        let result = try await session.respond(to: prompt, options: genOpts)
-        rawContent = result.content
+        rawContent = try await withRetry(maxRetries: srvRetryMax) {
+            let result = try await session.respond(to: prompt, options: genOpts)
+            return result.content
+        }
     } catch {
         let classified = ApfelError.classify(error)
         let msg = classified.openAIMessage
@@ -306,10 +311,13 @@ private func nonStreamingResponse(
     requestBody: String?,
     events: [String]
 ) async throws -> (response: Response, trace: ChatRequestTrace) {
+    let nsRetryMax = serverState.config.retryEnabled ? serverState.config.retryCount : 0
     let content: String
     do {
-        let result = try await session.respond(to: prompt, options: genOpts)
-        content = result.content
+        content = try await withRetry(maxRetries: nsRetryMax) {
+            let result = try await session.respond(to: prompt, options: genOpts)
+            return result.content
+        }
     } catch {
         let classified = ApfelError.classify(error)
         let msg = classified.openAIMessage

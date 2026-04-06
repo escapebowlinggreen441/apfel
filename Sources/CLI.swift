@@ -55,12 +55,17 @@ func singlePrompt(_ prompt: String, systemPrompt: String?, stream: Bool, options
     let genOpts = makeGenerationOptions(options)
 
     // Get response (with tool execution loop if MCP tools present)
+    let retryMax = options.retryEnabled ? options.retryCount : 0
     var content: String
     if stream {
-        content = try await collectStream(session, prompt: finalPrompt, printDelta: !hasMCPTools && outputFormat == .plain, options: genOpts)
+        content = try await withRetry(maxRetries: retryMax) {
+            try await collectStream(session, prompt: finalPrompt, printDelta: !hasMCPTools && outputFormat == .plain, options: genOpts)
+        }
     } else {
-        let response = try await session.respond(to: finalPrompt, options: genOpts)
-        content = response.content
+        content = try await withRetry(maxRetries: retryMax) {
+            let response = try await session.respond(to: finalPrompt, options: genOpts)
+            return response.content
+        }
     }
 
     // Tool execution: detect tool call, execute via MCP, then ask model for plain text answer
@@ -167,14 +172,20 @@ func chat(systemPrompt: String?, options: SessionOptions = .defaults, mcpManager
         }
 
         do {
+            let chatRetryMax = options.retryEnabled ? options.retryCount : 0
+            let currentSession = session  // capture by value for @Sendable closure
             var content: String
             switch outputFormat {
             case .plain:
-                content = try await collectStream(session, prompt: trimmed, printDelta: !hasMCPTools, options: genOpts)
+                content = try await withRetry(maxRetries: chatRetryMax) {
+                    try await collectStream(currentSession, prompt: trimmed, printDelta: !hasMCPTools, options: genOpts)
+                }
                 if !hasMCPTools { print("\n") }
 
             case .json:
-                content = try await collectStream(session, prompt: trimmed, printDelta: false, options: genOpts)
+                content = try await withRetry(maxRetries: chatRetryMax) {
+                    try await collectStream(currentSession, prompt: trimmed, printDelta: false, options: genOpts)
+                }
             }
 
             // MCP tool execution: detect tool call, execute, get plain text answer
@@ -440,6 +451,8 @@ func printUsage() {
           --max-tokens <n>       Maximum response tokens
           --mcp <path>           Attach MCP tool server (repeatable)
           --permissive           Use permissive content guardrails
+          --retry                Enable retry with exponential backoff on transient errors
+          --retry-count <n>      Max retry attempts [default: 3, implies --retry]
           --model-info           Print model capabilities and exit
           --benchmark            Run internal performance benchmarks
           --update               Check for updates and upgrade via Homebrew

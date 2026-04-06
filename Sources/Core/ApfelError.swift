@@ -5,6 +5,7 @@ public enum ApfelError: Error, Equatable, Sendable {
     case contextOverflow
     case rateLimited
     case concurrentRequest
+    case assetsUnavailable
     case unsupportedLanguage(String)
     case toolExecution(String)
     case unknown(String)
@@ -36,6 +37,9 @@ public enum ApfelError: Error, Equatable, Sendable {
             if mirror.contains("unsupportedLanguageOrLocale") {
                 return .unsupportedLanguage(error.localizedDescription)
             }
+            if mirror.contains("assetsUnavailable") {
+                return .assetsUnavailable
+            }
         }
 
         // Fallback: string matching for unknown error types
@@ -64,6 +68,7 @@ public enum ApfelError: Error, Equatable, Sendable {
         case .contextOverflow:     return "[context overflow]"
         case .rateLimited:         return "[rate limited]"
         case .concurrentRequest:   return "[busy]"
+        case .assetsUnavailable:   return "[model loading]"
         case .unsupportedLanguage: return "[unsupported language]"
         case .toolExecution:       return "[tool error]"
         case .unknown:             return "[error]"
@@ -76,6 +81,7 @@ public enum ApfelError: Error, Equatable, Sendable {
         case .contextOverflow:     return "context_length_exceeded"
         case .rateLimited:         return "rate_limit_error"
         case .concurrentRequest:   return "rate_limit_error"
+        case .assetsUnavailable:   return "server_error"
         case .unsupportedLanguage: return "invalid_request_error"
         case .toolExecution:       return "server_error"
         case .unknown:             return "server_error"
@@ -89,6 +95,7 @@ public enum ApfelError: Error, Equatable, Sendable {
         case .contextOverflow:     return 400
         case .rateLimited:         return 429
         case .concurrentRequest:   return 429
+        case .assetsUnavailable:   return 503
         case .unsupportedLanguage: return 400
         case .toolExecution:       return 500
         case .unknown:             return 500
@@ -105,6 +112,8 @@ public enum ApfelError: Error, Equatable, Sendable {
             return "Apple Intelligence is rate limited. Retry after a few seconds."
         case .concurrentRequest:
             return "Apple Intelligence is busy with another request. Retry shortly."
+        case .assetsUnavailable:
+            return "Model assets are loading. Try again in a moment."
         case .unsupportedLanguage(let msg):
             return "Unsupported language: \(msg)"
         case .toolExecution(let msg):
@@ -113,4 +122,21 @@ public enum ApfelError: Error, Equatable, Sendable {
             return msg
         }
     }
+
+    /// Whether this error type is transient and should be retried.
+    /// Uses typed matching (locale-independent) — safe on any macOS language.
+    public var isRetryable: Bool {
+        switch self {
+        case .rateLimited, .concurrentRequest, .assetsUnavailable:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+/// Check if an error is retryable using ApfelError.classify().
+/// Locale-safe: matches on Swift type names, not localizedDescription.
+public func isRetryableError(_ error: Error) -> Bool {
+    ApfelError.classify(error).isRetryable
 }

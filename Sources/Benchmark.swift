@@ -71,7 +71,9 @@ private func benchmarkReport() async throws -> BenchmarkReport {
         maxTokens: 256,
         seed: 42,
         permissive: false,
-        contextConfig: ContextConfig(strategy: .newestFirst, maxTurns: nil, outputReserve: 512)
+        contextConfig: ContextConfig(strategy: .newestFirst, maxTurns: nil, outputReserve: 512),
+        retryEnabled: false,
+        retryCount: 3
     )
 
     let textExtraction = await benchmarkTextContent()
