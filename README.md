@@ -86,6 +86,9 @@ apfel -s "You are a pirate" "What is recursion?"
 # System prompt from file
 apfel --system-file persona.txt "Explain TCP/IP"
 
+# Permissive mode -- reduces guardrail false positives for creative/long prompts
+apfel --permissive "Write a dramatic opening for a thriller novel"
+
 # Quiet mode for shell scripts
 result=$(apfel -q "Capital of France? One word.")
 ```
@@ -405,8 +408,9 @@ apfel --seed 42 "Tell me a joke"
 # --max-tokens
 apfel --max-tokens 50 "Explain quantum computing"
 
-# --permissive
+# --permissive — relaxed guardrails (see docs/PERMISSIVE.md for comparison)
 apfel --permissive "Write a villain monologue"
+apfel --permissive -f long-document.md "Summarize this"
 
 # --retry
 apfel --retry "What is 2+2?"
