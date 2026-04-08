@@ -535,7 +535,9 @@ Every `make build`/`make install` auto-bumps the patch version, updates the READ
 
 ## Integrations
 
-apfel works with any tool that speaks the OpenAI API. Verified configs: [docs/integrations.md](docs/integrations.md)
+apfel works with any tool that speaks the OpenAI API. Verified configs:
+
+- **opencode** - AI coding assistant with apfel as local backend. [docs/integrations.md](docs/integrations.md)
 
 ## Related Projects
 
