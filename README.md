@@ -21,8 +21,7 @@ Every Mac with Apple Silicon has a **built-in LLM** - Apple's on-device foundati
 - **OpenAI-compatible server** - `apfel --serve` - drop-in replacement at `localhost:11434`, works with any OpenAI SDK
 - **Tool calling** - function calling with schema conversion, full round-trip support
 - **Zero cost** - no API keys, no cloud, no subscriptions, 4096-token context window
-
-*Prefer a GUI? [apfel-chat](https://apfel-chat.franzai.com) (chat client) ([gh](https://github.com/Arthur-Ficial/apfel-chat)), [apfel-clip](https://apfel-clip.franzai.com) (clipboard actions) ([gh](https://github.com/Arthur-Ficial/apfel-clip)), [apfel-gui](https://github.com/Arthur-Ficial/apfel-gui) (debug inspector).*
+- **GUI apps** - [apfel-chat](https://apfel-chat.franzai.com) chat client [gh](https://github.com/Arthur-Ficial/apfel-chat), [apfel-clip](https://apfel-clip.franzai.com) clipboard actions [gh](https://github.com/Arthur-Ficial/apfel-clip), [apfel-gui](https://github.com/Arthur-Ficial/apfel-gui) debug inspector
 
 ![apfel CLI](screenshots/cli.png)
 
