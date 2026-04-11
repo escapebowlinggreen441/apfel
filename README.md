@@ -140,16 +140,7 @@ apfel --chat --mcp ./mcp/calculator/server.py      # chat with MCP tools
 apfel --chat --debug                                # debug output to stderr
 ```
 
-Ctrl-C exits cleanly. Context window is managed automatically with configurable strategies:
-
-```bash
-apfel --chat --context-strategy newest-first     # default: keep recent turns
-apfel --chat --context-strategy oldest-first     # keep earliest turns
-apfel --chat --context-strategy sliding-window --context-max-turns 6
-apfel --chat --context-strategy summarize        # compress old turns via on-device model
-apfel --chat --context-strategy strict           # error on overflow, no trimming
-apfel --chat --context-output-reserve 256        # custom output token reserve
-```
+Ctrl-C exits cleanly. Context window is managed automatically with configurable strategies: [docs/context-strategies.md](docs/context-strategies.md).
 
 ### Updating
 
