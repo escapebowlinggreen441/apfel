@@ -136,7 +136,7 @@ jobs:
             notes+=$(git log --oneline "$prev_tag"..HEAD~1 -- | sed 's/^/- /')
           fi
           notes+=$'\n\n'"---"$'\n'
-          notes+="Install: \`brew tap Arthur-Ficial/tap && brew install apfel\`"$'\n'
+          notes+="Install: \`brew install apfel\`"$'\n'
           notes+="Upgrade: \`brew upgrade apfel\`"
 
           if gh release view "v$version" >/dev/null 2>&1; then

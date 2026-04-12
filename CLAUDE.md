@@ -63,7 +63,7 @@ HTTP Server (/v1/*) ───────┘   ContextManager → Transcript API
 
 - Version: `1.0.0` (source of truth: `.version`)
 - Tests: 335 unit + 216 integration
-- Distribution: Homebrew tap (`brew tap Arthur-Ficial/tap && brew install apfel`), homebrew-core pending
+- Distribution: homebrew-core (`brew install apfel`)
 - Stability policy: [STABILITY.md](STABILITY.md)
 - Security policy: [SECURITY.md](SECURITY.md)
 
@@ -298,14 +298,16 @@ This dispatches the **Publish Release** GitHub Actions workflow which:
 
 Verifies: GitHub Release exists with tarball, git tag exists, `.version` matches, installed binary matches.
 
-### Homebrew distribution
+### Homebrew-core
 
-apfel is currently distributed through the custom tap (`Arthur-Ficial/homebrew-tap`). The release workflow automatically updates the tap formula.
+apfel is distributed through homebrew-core. We do NOT maintain the formula.
 
-- Users install: `brew tap Arthur-Ficial/tap && brew install apfel`
+- Users install: `brew install apfel`
 - Users upgrade: `brew upgrade apfel`
+- Autobump picks up new GitHub Releases automatically
+- Emergency: `brew bump-formula-pr apfel --url=<tarball-url> --sha256=<hash>`
 
-**homebrew-core transition:** PR #276365 is pending to add apfel to homebrew-core. Once accepted, install will simplify to `brew install apfel` (no tap needed). The tap will then become a secondary channel for apfel-family tools and pre-release builds. At that point, remove the tap update steps from the publish-release workflow and update all install docs.
+The custom tap (`Arthur-Ficial/homebrew-tap`) is a secondary channel for apfel-family tools (apfel-chat, apfel-clip, apfel-mcp, etc.).
 
 ### Do NOT manually
 
@@ -334,5 +336,5 @@ apfel is currently distributed through the custom tap (`Arthur-Ficial/homebrew-t
 - SDK 26.4+ required for FoundationModels token-counting APIs.
 - **CI workflow** (`ci.yml`): build + unit tests + integration tests (6 suites) on every push/PR to main.
 - **Publish Release workflow** (`publish-release.yml`): full qualification (unit + 7 integration suites) + release + GitHub Release. Triggered by `make release`.
-- No secrets required for CI. Release workflow requires `HOMEBREW_TAP_PUSH_TOKEN` (fine-grained token with Contents R/W on `Arthur-Ficial/homebrew-tap`).
+- No secrets required for CI. Release workflow requires `HOMEBREW_TAP_PUSH_TOKEN` for tap updates (fine-grained token with Contents R/W on `Arthur-Ficial/homebrew-tap`). homebrew-core updates automatically via autobump.
 - Release docs: [docs/release.md](docs/release.md)

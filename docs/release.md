@@ -80,35 +80,19 @@ Total time: ~5 minutes.
 
 Verifies: GitHub Release exists with tarball, git tag exists, .version matches, installed binary matches.
 
-## Homebrew distribution
+## Homebrew-core distribution
 
-apfel is currently distributed through the custom tap:
+apfel is in [homebrew-core](https://github.com/Homebrew/homebrew-core). We do NOT maintain the formula directly.
 
 ```bash
-brew tap Arthur-Ficial/tap
 brew install apfel
 brew upgrade apfel
 ```
 
-The release workflow automatically updates the tap formula with each release.
+- Homebrew's autobump bot picks up new GitHub Releases automatically
+- Emergency formula update: `brew bump-formula-pr apfel --url=<tarball-url> --sha256=<hash>`
 
-### homebrew-core transition (pending)
-
-PR #276365 is pending to add apfel to homebrew-core. Once accepted:
-- Install simplifies to `brew install apfel` (no tap needed)
-- homebrew-core autobump picks up new releases automatically
-- Remove tap update steps from publish-release.yml
-- Update all install docs to remove tap references
-
-## One-time setup
-
-The `HOMEBREW_TAP_PUSH_TOKEN` secret must exist on `Arthur-Ficial/apfel`:
-
-1. Create a fine-grained GitHub token with **Contents: Read and write** access to `Arthur-Ficial/homebrew-tap`
-2. Store it:
-   ```bash
-   gh secret set HOMEBREW_TAP_PUSH_TOKEN --repo Arthur-Ficial/apfel
-   ```
+The release workflow also updates the custom tap (`Arthur-Ficial/homebrew-tap`) as a secondary channel for apfel-family tools. The `HOMEBREW_TAP_PUSH_TOKEN` secret is required for tap updates.
 
 ## Versioning rules
 
