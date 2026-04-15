@@ -41,14 +41,6 @@ brew upgrade apfel
 
 Latest release immediately via tap: `brew install Arthur-Ficial/tap/apfel` (homebrew-core autobump can lag up to 24h).
 
-**Nix** (nixpkgs):
-
-```bash
-nix profile install nixpkgs#apfel-ai
-```
-
-The attribute is `apfel-ai` because nixpkgs already has an unrelated package at `apfel` (a physics library). The binary on your PATH is still `apfel`. See [docs/nixpkgs.md](docs/nixpkgs.md).
-
 **Build from source:**
 
 ```bash
