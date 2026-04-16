@@ -139,7 +139,7 @@ When a new issue comes in, follow this process:
 
 When a PR is opened, follow this process. Scale the rigor to the PR type - docs-only PRs skip the security audit and test coverage steps, code PRs get the full treatment.
 
-**Automated first-responder:** `Arthur-Ficial/apfel` has a Claude Code routine (`.claude/routines/02-pr-auto-review.md`) that runs this entire process on `pull_request.opened` / `pull_request.synchronize` and posts a `COMMENTED` review. The routine cannot `--approve`, cannot merge, cannot run `make test` (no Apple Intelligence on cloud runners), and cannot cut releases. It is a first-pass safety net, not a replacement for human judgement. Franz still merges, Franz still releases — always. See [docs/routines.md](docs/routines.md) and [.claude/routines/README.md](.claude/routines/README.md).
+**Automated first-responder:** `Arthur-Ficial/apfel` has a Claude Code routine (`.claude/routines/02-pr-auto-review.md`) that runs this entire process on `pull_request.opened` / `pull_request.synchronize` and posts a `COMMENTED` review. The routine cannot `--approve`, cannot merge, cannot run `make test` (no Apple Intelligence on cloud runners), and cannot cut releases. It is a first-pass safety net, not a replacement for human judgement. Franz still merges, Franz still releases - always. See [docs/routines.md](docs/routines.md) and [.claude/routines/README.md](.claude/routines/README.md).
 
 ### 1. Fetch everything
 
@@ -304,9 +304,9 @@ Verifies: GitHub Release exists with tarball, git tag exists, `.version` matches
 
 apfel ships through three channels. All pull the same signed tarball from each GitHub Release.
 
-- **homebrew-core** — `brew install apfel`. Autobump detects new releases; latency ~24h. We do not maintain the formula.
-- **Arthur-Ficial/homebrew-tap** — `brew install Arthur-Ficial/tap/apfel`. Synchronous, pushed as part of `make release`. Secondary channel; also houses apfel-family tools (apfel-chat, apfel-clip, apfel-mcp, etc.).
-- **nixpkgs** — `nix profile install nixpkgs#apfel-ai`. Name is `apfel-ai` because nixpkgs already has an unrelated physics `apfel`. Two-layer automation: community r-ryantm bot (~weekly) plus our `.github/workflows/bump-nixpkgs.yml` on every release (~5 min). See [docs/nixpkgs.md](docs/nixpkgs.md). Requires the `NIXPKGS_BUMP_PAT` repo secret.
+- **homebrew-core** - `brew install apfel`. Autobump detects new releases; latency ~24h. We do not maintain the formula.
+- **Arthur-Ficial/homebrew-tap** - `brew install Arthur-Ficial/tap/apfel`. Synchronous, pushed as part of `make release`. Secondary channel; also houses apfel-family tools (apfel-chat, apfel-clip, apfel-mcp, etc.).
+- **nixpkgs** - `nix profile install nixpkgs#apfel-ai`. Name is `apfel-ai` because nixpkgs already has an unrelated physics `apfel`. Two-layer automation: community r-ryantm bot (~weekly) plus our `.github/workflows/bump-nixpkgs.yml` on every release (~5 min). See [docs/nixpkgs.md](docs/nixpkgs.md). Requires the `NIXPKGS_BUMP_PAT` repo secret.
 - Emergency Homebrew bump: `brew bump-formula-pr apfel --url=<tarball-url> --sha256=<hash>`
 - Emergency nixpkgs bump: run `scripts/bump-nixpkgs.sh` against a local nixpkgs clone and open a PR manually.
 

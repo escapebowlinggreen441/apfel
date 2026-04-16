@@ -1,4 +1,4 @@
-# Install — Detailed Guide
+# Install - Detailed Guide
 
 ## Requirements
 
@@ -16,7 +16,7 @@ brew install apfel
 
 No build tools needed. See [brew-install.md](brew-install.md) for troubleshooting.
 
-## Option 2: Nix (nixpkgs) — pending
+## Option 2: Nix (nixpkgs) - pending
 
 The initial nixpkgs submission ([NixOS/nixpkgs#510089](https://github.com/NixOS/nixpkgs/pull/510089)) is under upstream review and not yet merged. Once it lands:
 
@@ -115,7 +115,7 @@ If `apfel --model-info` shows `available: no`, the specific reason is printed al
 | **Device not eligible** | Intel Mac, or Mac older than M1 | Apple Silicon (M1 or later) is required. This is a hard Apple requirement - there is no workaround. |
 | **Model not ready** | On-device model is still downloading (~3-4 GB on first enable) | Keep your Mac on **Wi-Fi and power**. Check download progress in System Settings > Apple Intelligence & Siri. Try again in a few minutes. |
 
-apfel is a thin wrapper around Apple's on-device model — it cannot turn on Apple Intelligence for you. Once the underlying Apple toggle is on and models are downloaded, apfel just works.
+apfel is a thin wrapper around Apple's on-device model - it cannot turn on Apple Intelligence for you. Once the underlying Apple toggle is on and models are downloaded, apfel just works.
 
 Apple's full Apple Intelligence setup guide: [support.apple.com/en-us/121115](https://support.apple.com/en-us/121115)
 
