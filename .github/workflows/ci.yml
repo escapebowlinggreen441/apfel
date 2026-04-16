@@ -27,7 +27,8 @@ jobs:
           echo "Swift: $(swift --version 2>&1 | head -1)"
 
       - name: Build
-        run: swift build -c release
+        # Use make so generate-man-page (and generate-build-info) run too.
+        run: make build
 
       - name: Unit tests
         run: swift run apfel-tests
@@ -45,6 +46,10 @@ jobs:
           python3 -m pytest Tests/integration/cli_e2e_test.py \
             -k "help or version or invalid_flag or no_color or ansi or exit_code or update or release_exits or release_in_help or release_shows_version or mcp_timeout_flag_in_help or mcp_timeout_env_var_in_help or file_flag_missing or file_flag_nonexistent or file_flag_image or file_flag_binary or file_flag_unknown" \
             -v --tb=short
+
+          # Man page drift tests (model-free): block any PR that adds/renames
+          # a flag, env var, or exit code without updating man/apfel.1.in.
+          python3 -m pytest Tests/integration/test_man_page.py -v --tb=short
 
           # Note: performance_test.py requires Apple Intelligence (benchmark runs inference).
           # It runs locally via make preflight / make release.

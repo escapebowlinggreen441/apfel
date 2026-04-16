@@ -46,6 +46,7 @@ class Apfel < Formula
 
   def install
     bin.install "apfel"
+    man1.install "apfel.1"
   end
 
   service do
@@ -82,6 +83,7 @@ class Apfel < Formula
 
   test do
     assert_match "apfel v#{version}", shell_output("#{bin}/apfel --version")
+    assert_predicate man1/"apfel.1", :exist?
   end
 end
 EOF

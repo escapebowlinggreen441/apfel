@@ -36,12 +36,30 @@ else
     fail "local ($local_sha) differs from origin/main ($remote_sha) - pull or push first"
 fi
 
-# --- 4. Build succeeds ---
+# --- 4. Build succeeds (uses make so BuildInfo + man page regenerate) ---
 step "Build"
-if swift build -c release 2>&1 | tail -3; then
+if make build 2>&1 | tail -5; then
     pass "release build"
 else
     fail "release build"
+fi
+
+# --- 4b. Man page exists and lints cleanly ---
+step "Man page"
+if [ -f .build/release/apfel.1 ]; then
+    pass "man page generated"
+else
+    fail "man page missing at .build/release/apfel.1"
+fi
+if command -v mandoc >/dev/null 2>&1; then
+    if mandoc -Tlint -W warning .build/release/apfel.1 >/tmp/mandoc.log 2>&1; then
+        pass "mandoc -Tlint clean"
+    else
+        cat /tmp/mandoc.log
+        fail "mandoc -Tlint warnings"
+    fi
+else
+    echo "(skipping mandoc lint: mandoc not installed)"
 fi
 
 # --- 5. Unit tests ---

@@ -94,6 +94,7 @@ suite("ToolResolutionTests") { runToolResolutionTests() }
 suite("BodyLimitsTests") { runBodyLimitsTests() }
 suite("TraceBufferTests") { runTraceBufferTests() }
 suite("StreamTaskBoxTests") { runStreamTaskBoxTests() }
+suite("ManPageTests") { runManPageTests() }
 
 // MARK: - Summary
 

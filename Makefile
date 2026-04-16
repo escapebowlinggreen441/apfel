@@ -2,7 +2,7 @@ PREFIX ?= /usr/local
 BINARY = apfel
 VERSION_FILE = .version
 
-.PHONY: check-toolchain build install uninstall clean bump-patch bump-minor bump-major generate-build-info update-readme version release release-patch release-minor release-major package-release-asset print-release-asset print-release-sha256 update-homebrew-formula preflight benchmark test
+.PHONY: check-toolchain build install uninstall clean bump-patch bump-minor bump-major generate-build-info generate-man-page man update-readme version release release-patch release-minor release-major package-release-asset print-release-asset print-release-sha256 update-homebrew-formula preflight benchmark test
 
 # --- Environment checks ---
 
@@ -48,6 +48,7 @@ check-toolchain:
 
 build: check-toolchain generate-build-info
 	swift build -c release
+	@$(MAKE) --no-print-directory generate-man-page
 
 install: build
 	@pkill -f "apfel --serve" 2>/dev/null || true
@@ -74,7 +75,21 @@ install: build
 	else \
 		sudo install .build/release/$(BINARY) $(PREFIX)/bin/$(BINARY); \
 	fi
+	@man_dir="$(PREFIX)/share/man/man1"; \
+	if [ ! -d "$$man_dir" ]; then \
+		if [ -w "$(PREFIX)/share" ] 2>/dev/null || [ -w "$(PREFIX)" ]; then \
+			mkdir -p "$$man_dir"; \
+		else \
+			sudo mkdir -p "$$man_dir"; \
+		fi; \
+	fi; \
+	if [ -w "$$man_dir" ]; then \
+		install -m 0644 .build/release/$(BINARY).1 "$$man_dir/$(BINARY).1"; \
+	else \
+		sudo install -m 0644 .build/release/$(BINARY).1 "$$man_dir/$(BINARY).1"; \
+	fi
 	@echo "✓ installed: $$($(PREFIX)/bin/$(BINARY) --version)"
+	@echo "✓ man page: $(PREFIX)/share/man/man1/$(BINARY).1"
 	@resolved=$$(which $(BINARY) 2>/dev/null || echo "not in PATH"); \
 	if [ "$$resolved" != "$(PREFIX)/bin/$(BINARY)" ]; then \
 		echo "⚠ warning: 'which $(BINARY)' resolves to $$resolved, not $(PREFIX)/bin/$(BINARY)"; \
@@ -146,6 +161,24 @@ update-readme:
 	sed -i '' 's/Version [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/Version '"$$v"'/' README.md; \
 	sed -i '' 's/version-[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*-blue/version-'"$$v"'-blue/' README.md
 
+generate-man-page:
+	@v=$$(cat $(VERSION_FILE)); \
+	if [ ! -f man/apfel.1.in ]; then \
+		echo "error: missing man/apfel.1.in"; exit 1; \
+	fi; \
+	mkdir -p .build/release; \
+	sed "s/@VERSION@/$$v/g" man/apfel.1.in > .build/release/apfel.1; \
+	if command -v mandoc >/dev/null 2>&1; then \
+		if ! mandoc -Tlint -W warning .build/release/apfel.1 >/dev/null 2>&1; then \
+			echo "error: mandoc -Tlint failed on .build/release/apfel.1"; \
+			mandoc -Tlint -W warning .build/release/apfel.1; \
+			exit 1; \
+		fi; \
+	fi
+
+man: generate-man-page
+	@man .build/release/apfel.1
+
 # --- One-command release (runs locally with full test qualification) ---
 # GitHub-hosted runners lack Apple Intelligence, so releases run locally.
 # Usage:
@@ -195,6 +228,14 @@ uninstall:
 	else \
 		sudo rm -f $(PREFIX)/bin/$(BINARY); \
 	fi
+	@man_file="$(PREFIX)/share/man/man1/$(BINARY).1"; \
+	if [ -e "$$man_file" ]; then \
+		if [ -w "$(PREFIX)/share/man/man1" ]; then \
+			rm -f "$$man_file"; \
+		else \
+			sudo rm -f "$$man_file"; \
+		fi; \
+	fi
 	@# Restore Homebrew apfel if it was unlinked by make install.
 	@if command -v brew >/dev/null 2>&1 && brew list apfel >/dev/null 2>&1; then \
 		if ! [ -L "$$(brew --prefix)/bin/$(BINARY)" ]; then \
@@ -221,7 +262,11 @@ package-release-asset:
 		echo "error: missing .build/release/$(BINARY). Build a release binary first."; \
 		exit 1; \
 	fi; \
-	tar -C .build/release -czf "$$asset" $(BINARY); \
+	if [ ! -f ".build/release/$(BINARY).1" ]; then \
+		echo "error: missing .build/release/$(BINARY).1. Run make generate-man-page first."; \
+		exit 1; \
+	fi; \
+	tar -C .build/release -czf "$$asset" $(BINARY) $(BINARY).1; \
 	echo "$$asset"
 
 print-release-asset:
